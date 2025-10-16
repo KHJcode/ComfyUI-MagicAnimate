@@ -1,3 +1,9 @@
+# diffusers 0.29+ 경로 변경 호환
+import importlib.util, sys
+if importlib.util.find_spec("diffusers.models.unet_2d_blocks") is None:
+    from diffusers.models.unets import unet_2d_blocks as _u2
+    sys.modules["diffusers.models.unet_2d_blocks"] = _u2
+
 import folder_paths
 import os
 import sys
