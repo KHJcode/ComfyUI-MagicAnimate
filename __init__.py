@@ -1,19 +1,35 @@
-# --- diffusers 0.29+ 경로 변경 호환 레이어 ---
+# --- diffusers 0.29+ 호환 레이어 (경로/클래스 alias) ---
 import importlib, sys
 
-def _alias(old, new):
+def _alias_module(old_mod, new_mod):
+    """import 실패 시 새 경로 모듈을 옛 이름으로 등록"""
     try:
-        importlib.import_module(old)
+        importlib.import_module(old_mod)
     except Exception:
         try:
-            sys.modules[old] = importlib.import_module(new)
+            sys.modules[old_mod] = importlib.import_module(new_mod)
         except Exception:
             pass
 
-_alias("diffusers.models.unet_2d_blocks",    "diffusers.models.unets.unet_2d_blocks")
-_alias("diffusers.models.unet_2d_condition",  "diffusers.models.unets.unet_2d_condition")
-_alias("diffusers.models.resnet",             "diffusers.models.unets.resnet")
-_alias("diffusers.models.transformer_2d",     "diffusers.models.transformers.transformer_2d")
+# 모듈 경로 이동 (0.29+)
+_alias_module("diffusers.models.unet_2d_blocks",    "diffusers.models.unets.unet_2d_blocks")
+_alias_module("diffusers.models.unet_2d_condition",  "diffusers.models.unets.unet_2d_condition")
+_alias_module("diffusers.models.resnet",             "diffusers.models.unets.resnet")
+_alias_module("diffusers.models.transformer_2d",     "diffusers.models.transformers.transformer_2d")
+
+# 클래스 이름 변경 (PositionNet/CaptionProjection 등)
+try:
+    from diffusers.models import embeddings as _emb
+    # PositionNet -> GLIGENTextBoundingboxProjection
+    if not hasattr(_emb, "PositionNet"):
+        from diffusers.models.embeddings import GLIGENTextBoundingboxProjection as _PositionNet
+        _emb.PositionNet = _PositionNet
+    # CaptionProjection -> PixArtAlphaTextProjection (향후 같은 에러 예방용)
+    if not hasattr(_emb, "CaptionProjection"):
+        from diffusers.models.embeddings import PixArtAlphaTextProjection as _CaptionProjection
+        _emb.CaptionProjection = _CaptionProjection
+except Exception:
+    pass
 # --- 호환 레이어 끝 ---
 
 import folder_paths
