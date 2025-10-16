@@ -1,8 +1,20 @@
-# diffusers 0.29+ 경로 변경 호환
-import importlib.util, sys
-if importlib.util.find_spec("diffusers.models.unet_2d_blocks") is None:
-    from diffusers.models.unets import unet_2d_blocks as _u2
-    sys.modules["diffusers.models.unet_2d_blocks"] = _u2
+# --- diffusers 0.29+ 경로 변경 호환 레이어 ---
+import importlib, sys
+
+def _alias(old, new):
+    try:
+        importlib.import_module(old)
+    except Exception:
+        try:
+            sys.modules[old] = importlib.import_module(new)
+        except Exception:
+            pass
+
+_alias("diffusers.models.unet_2d_blocks",    "diffusers.models.unets.unet_2d_blocks")
+_alias("diffusers.models.unet_2d_condition",  "diffusers.models.unets.unet_2d_condition")
+_alias("diffusers.models.resnet",             "diffusers.models.unets.resnet")
+_alias("diffusers.models.transformer_2d",     "diffusers.models.transformers.transformer_2d")
+# --- 호환 레이어 끝 ---
 
 import folder_paths
 import os
